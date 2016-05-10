@@ -24,18 +24,23 @@ glift.controllers.ServerGameMethods = {
   extraOptions: function() {},
 
   /**
-   * Find the variation associated with the played move.
+   * Add a played stone to the board
    *
    * Returns null if the addStone operation isn't possible.
    */
   addStone: function(point, color) {
-    var possibleMap = this._possibleNextMoves();
-    var key = point.toString() + '-' + color;
-    if (possibleMap[key] === undefined) {
+    if (!this.canAddStone(point, color)) {
       return null;
     }
-    var nextVariationNum = possibleMap[key];
-    return this.nextMove(nextVariationNum);
+
+    // TODO(kashomon): Use the addResult
+    var addResult = this.goban.addStone(point, color);
+
+    this.movetree.addNode();
+    this.movetree.properties().add(
+        glift.sgf.colorToToken(color),
+        point.toSgfCoord());
+    return this.flattenedState();
   },
 
   /**
