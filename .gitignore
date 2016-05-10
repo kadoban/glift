@@ -6,3 +6,4 @@ README.md.html
 *.sublime-workspace
 node_modules
 /compiled/
+/src/htmltests_out/

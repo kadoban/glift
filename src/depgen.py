@@ -311,7 +311,14 @@ class FileBeast(object):
           self.header_sentinel + '((.|\n)*)' + self.footer_sentinel,
           importstr,
           contents)
-      fd = open(fname, 'w')
+      dir_part, name_part = os.path.split(fname)
+      dir_part += "_out" # TODO: This should probably be elsewhere, like in
+                         # OUTPUT_DIRECTORY, but that would require changes
+                         # to the import creation code that I don't want to
+                         # figure out right now
+      fname_out = os.path.join(dir_part, name_part)
+      self._mkdir_p(dir_part)
+      fd = open(fname_out, 'w')
       fd.write(contents)
       fd.close()
 
