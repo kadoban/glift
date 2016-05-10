@@ -8,6 +8,7 @@ import os
 import sys
 import re
 import subprocess
+import errno
 
 EXAMPLE_FILES_TO_AUTOGEN = {
   ### Manual Tests
@@ -273,9 +274,18 @@ class FileBeast(object):
 
   def _write_file(self, content, path):
     """ Writes a file to disk """
+    self._mkdir_p(os.path.dirname(path))
     fd = open(path, 'w')
     fd.write(content)
     fd.close()
+
+  def _mkdir_p(self, path):
+    """ Creates directories as needed if they don't exist """
+    try:
+        os.makedirs(path)
+    except OSError as e:
+        if not (e.errno == errno.EEXIST and os.path.isdir(path)):
+            raise
 
   def _concat_path(self):
     """ Returns the concat path """
