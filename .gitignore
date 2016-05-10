@@ -1,9 +1,2 @@
-.DS_STORE
-*.swp
-*.swo
-README.md.html
-*.sublime-project
-*.sublime-workspace
-node_modules
 /compiled/
 /src/htmltests_out/
