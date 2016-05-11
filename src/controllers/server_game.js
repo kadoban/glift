@@ -10,6 +10,8 @@ glift.controllers.serverGame = function(sgfOptions) {
   var newController = glift.util.setMethods(baseController,
       ctrl.ServerGameMethods);
   newController.initOptions(sgfOptions);
+  newController.serverState = undefined; /* movetree for when we're
+                                            "viewing offline" in KGS terms */
   return newController;
 };
 
@@ -28,19 +30,60 @@ glift.controllers.ServerGameMethods = {
    *
    * Returns null if the addStone operation isn't possible.
    */
-  addStone: function(point, color) {
-    if (!this.canAddStone(point, color)) {
-      return null;
+  addStone: function(point, color, opt_server) {
+    if (!opt_server && this.isOnline()) {
+      this.goOffline();
     }
 
-    // TODO(kashomon): Use the addResult
-    var addResult = this.goban.addStone(point, color);
+    if (!!opt_server == this.isOnline()) {
+      // TODO(kashomon): Use the addResult
+      var addResult = this.goban.addStone(point, color);
+    }
 
-    this.movetree.addNode();
-    this.movetree.properties().add(
+    var mt = this.movetree;
+    if (opt_server) {
+      mt = this.getServerMoveTree();
+    }
+
+    mt.addNode();
+    mt.properties().add(
         glift.sgf.colorToToken(color),
         point.toSgfCoord());
     return this.flattenedState();
+  },
+
+  /**
+   * Disconnect the local state from the server state, so the user can
+   * move around and edit independently.
+   */
+  goOffline: function() {
+    this.serverState = this.serverState || this.movetree.newTreeRef();
+    return this.flattenedState();
+  },
+
+  /**
+   * Are we offline?
+   */
+  isOffline: function() {
+    return !!this.serverState;
+  },
+
+  isOnline: function() {
+    return !this.isOffline();
+  },
+
+  /**
+   * Switch back to online state, follow what the server is doing.
+   */
+  goOnline: function() {
+    this.movetree = this.serverState || this.movetree;
+    this.serverState = undefined;
+    this.goban = glift.rules.goban.getFromMoveTree(this.movetree).goban;
+    return this.flattenedState();
+  },
+
+  getServerMoveTree: function() {
+    return this.serverState || this.movetree;
   },
 
   /**
