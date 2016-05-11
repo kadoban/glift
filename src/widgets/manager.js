@@ -147,6 +147,13 @@ glift.widgets.WidgetManager = function(options) {
    * @type {!glift.api.HookOptions}
    */
   this.hooks = options.hooks;
+
+  /**
+   * A persistent controller for some use-cases.
+   *
+   * @type {!glift.controllers.BaseController|undefined}
+   */
+  this.controller = undefined;
 };
 
 glift.widgets.WidgetManager.prototype = {
@@ -378,7 +385,17 @@ glift.widgets.WidgetManager.prototype = {
   createWidget: function(sgfObj) {
     return new glift.widgets.BaseWidget(
         this.getDivId(), sgfObj, this.displayOptions, this.iconActions,
-        this.stoneActions, this, this.hooks);
+        this.stoneActions, this, this.hooks, this.controller);
+  },
+
+  /**
+   * Create controller which will be used in any createWidgets, if it
+   * exists.
+   */
+  createController: function() {
+    var sgfObj = this.getCurrentSgfObj();
+    this.controller = sgfObj.controllerFunc(sgfObj);
+    return this.controller;
   },
 
   /**

@@ -14,7 +14,7 @@ goog.provide('glift.widgets.BaseWidget');
  * @constructor @final @struct
  */
 glift.widgets.BaseWidget = function(
-    divId, sgfOptions, displayOptions, iconActions, stoneActions, manager, hooks) {
+    divId, sgfOptions, displayOptions, iconActions, stoneActions, manager, hooks, controller) {
   /** @type {string} */
   // We split the wrapper div, but here we record the original reference.
   this.wrapperDivId = divId;
@@ -40,6 +40,9 @@ glift.widgets.BaseWidget = function(
 
   /** @type {!glift.widgets.WidgetManager} */
   this.manager = manager;
+
+  /** @type {!glift.controllers.BaseController|undefined} */
+  this.persistentController = controller;
 
   /** @type {!glift.api.HookOptions} */
   this.externalHooks = hooks;
@@ -67,7 +70,8 @@ glift.widgets.BaseWidget = function(
 glift.widgets.BaseWidget.prototype = {
   /** Draws the widget. */
   draw: function() {
-    this.controller = this.sgfOptions.controllerFunc(this.sgfOptions);
+    this.controller = this.persistentController ||
+                      this.sgfOptions.controllerFunc(this.sgfOptions);
     this.initialMoveNumber = this.controller.currentMoveNumber();
     this.initialPlayerColor = this.controller.getCurrentPlayer();
     glift.util.majorPerfLog('Created controller');
