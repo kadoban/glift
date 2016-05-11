@@ -32,6 +32,8 @@ glift.api.widgetopt[glift.enums.widgetTypes.SERVER_GAME] = {
 
   showVariations: glift.enums.showVariations.MORE_THAN_ONE,
 
+  boardRegion: glift.enums.boardRegions.ALL,
+
   statusBarIcons: [
     'game-info',
     'move-indicator',
