@@ -147,6 +147,96 @@ glift.controllers.ServerGameMethods = {
   },
 
   /**
+   * Get the Next move in the game.  If the player has already traversed a path,
+   * then we follow this previous path.
+   *
+   * If varNum is undefined, we try to 'guess' the next move based on the
+   * contents of the treepath.
+   *
+   * Proceed to the next move.  This is slightly trickier than you might
+   * imagine:
+   *   - We need to either add to the Movetree or, if the movetree is readonly,
+   *     we need to make sure the move/node exists.
+   *   - We need to update the Goban.
+   *   - We need to store the captures.
+   *   - We need to update the current move number.
+   *
+   * @param {number=} opt_varNum
+   *
+   * @return {?glift.flattener.Flattened} The flattened representation or null
+   *    if there is no next move.
+   */
+  nextMove: function(opt_varNum) {
+    if (this.treepath[this.currentMoveNumber()] !== undefined &&
+        (opt_varNum === undefined || this.nextVariationNumber() === opt_varNum)) {
+      // If possible, we prefer taking the route defined by a previously
+      // traversed treepath. In otherwords, don't mess with the treepath, if
+      // we're 'on variation'.
+      this.movetree.moveDown(this.nextVariationNumber());
+    } else {
+      // There is no existing treepath.
+      var varNum = opt_varNum === undefined ? 0 : opt_varNum;
+      if (varNum >= 0 &&
+          varNum <= this.movetree.nextMoves().length - 1) {
+        // We prefer taking 'move' nodes over nonmove nodes.
+        this.setNextVariation(varNum);
+        this.movetree.moveDown(varNum);
+      } else {
+        // There were no 'moves' available. However, it's possible there is some
+        // node next that doesn't have a move.
+        if (this.movetree.node().numChildren() > 0) {
+          this.setNextVariation(varNum);
+          this.movetree.moveDown(varNum);
+        } else {
+          return null; // No moves available
+        }
+      }
+    }
+    var clears = this.goban.applyClearLocationsFromMovetree(this.movetree);
+    var captures = this.goban.loadStonesFromMovetree(this.movetree);
+    this.koHistory.push(this.goban.getKo());
+    this.captureHistory.push(captures);
+    this.clearHistory.push(clears);
+    return this.flattenedState();
+  },
+
+  /**
+   * Go back a move.
+   * @return {?glift.flattener.Flattened} The flattened representation or null
+   *    if there is no previous move.
+   */
+  prevMove: function() {
+    if (this.currentMoveNumber() === 0) {
+      return null;
+    }
+    var captures = this.getCaptures();
+    var clears = this.clearHistory[this.clearHistory.length - 1] || [];
+    var allCurrentStones = this.movetree.properties().getAllStones();
+    this.captureHistory = this.captureHistory.slice(
+        0, this.captureHistory.length - 1);
+    this.clearHistory = this.clearHistory.slice(
+        0, this.clearHistory.length - 1);
+    this.unloadStonesFromGoban_(allCurrentStones, captures);
+    for (var i = 0; i < clears.length; i++) {
+      var move = clears[i];
+      if (move.point === undefined) {
+        throw new Error('Unexpected error! Clear history moves must have points.');
+      }
+      this.goban.setColor(move.point, move.color);
+    }
+
+    this.movetree.moveUp();
+    this.koHistory.pop();
+    if (this.koHistory.length) {
+      var ko = this.koHistory[this.koHistory.length -1];
+      if (ko) {
+        this.goban.setKo(ko);
+      }
+    }
+    return this.flattenedState();
+  },
+
+  /**
    * Move up what variation will be next retrieved.
    */
   moveUpVariations: function() {
