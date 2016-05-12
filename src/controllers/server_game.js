@@ -104,6 +104,7 @@ glift.controllers.ServerGameMethods = {
     var movesSeen = 0;
     var comment;
     var numChildren;
+    this.goOffline();
     do {
       displayData = this.prevMove();
       comment = this.movetree.properties().getOneValue('C');
@@ -132,6 +133,7 @@ glift.controllers.ServerGameMethods = {
     var movesSeen = 0;
     var comment;
     var numChildren;
+    this.goOffline();
     do {
       displayData = this.nextMove();
       comment = this.movetree.properties().getOneValue('C');
