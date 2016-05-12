@@ -167,6 +167,7 @@ glift.controllers.ServerGameMethods = {
    *    if there is no next move.
    */
   nextMove: function(opt_varNum) {
+    this.goOffline();
     if (this.treepath[this.currentMoveNumber()] !== undefined &&
         (opt_varNum === undefined || this.nextVariationNumber() === opt_varNum)) {
       // If possible, we prefer taking the route defined by a previously
@@ -206,6 +207,7 @@ glift.controllers.ServerGameMethods = {
    *    if there is no previous move.
    */
   prevMove: function() {
+    this.goOffline();
     if (this.currentMoveNumber() === 0) {
       return null;
     }
