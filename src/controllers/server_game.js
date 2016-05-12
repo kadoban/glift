@@ -78,7 +78,10 @@ glift.controllers.ServerGameMethods = {
   goOnline: function() {
     this.movetree = this.serverState || this.movetree;
     this.serverState = undefined;
-    this.goban = glift.rules.goban.getFromMoveTree(this.movetree).goban;
+    var mtInfo = glift.rules.goban.getFromMoveTree(this.movetree);
+    this.goban = mtInfo.goban;
+    this.captureHistory = mtInfo.captures;
+    this.clearHistory = mtInfo.clearHistory;
     return this.flattenedState();
   },
 
