@@ -18,10 +18,6 @@ glift.controllers.serverGame = function(sgfOptions) {
 glift.controllers.ServerGameMethods = {
   /**
    * Called during initOptions, in the BaseController.
-   *
-   * This creates a treepath (a persisted treepath) and an index into the
-   * treepath.  This allows us to 'remember' the last variation taken by the
-   * player, which seems to be the standard behavior.
    */
   extraOptions: function() {},
 
